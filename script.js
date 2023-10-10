@@ -36,8 +36,6 @@ const loadSearchResults = async function (query) {
     console.log(response);
     console.log(data);
 
-    // Comment to be deleted
-
     // If response status isn't OK, throw new error()
     if (!response.ok) throw new Error(`${response.status}: ${data.message}`);
 
