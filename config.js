@@ -14,5 +14,8 @@ export const API_URL_HEADLINES =
 export const API_URL_SOURCE = "https://newsapi.org/v2/top-headlines?sources=";
 // e.g. https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=API_KEY
 
-// TIMEOUT SEC - # of sec before displaying error message on ajax call
+// # of sec before displaying error message on ajax call
 export const TIMEOUT_SEC = 10;
+
+// For displaying number of results per search results page
+export const RES_PER_PAGE = 100;

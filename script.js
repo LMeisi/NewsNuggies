@@ -4,10 +4,24 @@ import { API_URL_SEARCH } from "./config.js";
 import { API_KEY } from "./config.js";
 // Import timeout secs used in timeout function from config
 import { TIMEOUT_SEC } from "./config.js";
+// Import timeout secs used in timeout function from config
+import { RES_PER_PAGE } from "./config.js";
 // Import Timeout function from helpers.js
 import { timeout } from "./helpers.js";
 
-// Create State object
+// Create State object - Object that contains the data for the current search query and results
+// Consider updating/clearing every time 'search' button is clicked?
+const state = {
+  news: {}, // Pick and Copy from state.search.resultsToRender array based on some form of id (what?)
+  search: {
+    query: "",
+    results: [], // All returned results for the query
+    resultsToRender: [], // results to be displayed on page, chosen result will be copied into the state.news object
+    page: 1, //state variable for current page number (that's being displayed), pagination will use this variable
+    resultsPerPage: RES_PER_PAGE, // 'resultsPerPage' is how many results we want shown on one page of search results, get it from config.js (RES_PER_PAGE)
+  },
+  bookmarks: [],
+};
 
 let searchQuery = "Apple";
 
@@ -28,6 +42,8 @@ let searchQuery = "Apple";
 ///////////////////*** Functions: Search Results related */
 
 // Function: (?)Get Query: Function to return search input value
+
+// Function: Sorting method (?) How to incorporate into get query function?
 
 // Function: Clear Input: Function to clear input value
 
