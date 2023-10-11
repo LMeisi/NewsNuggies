@@ -7,21 +7,31 @@ import { TIMEOUT_SEC } from "./config.js";
 // Import Timeout function from helpers.js
 import { timeout } from "./helpers.js";
 
+// Create State object
+
 let searchQuery = "Apple";
 
-// // Option 1: Fetch.then.
-// let query = `${API_URL_SEARCH}${searchQuery}&from=2023-10-09&sortBy=popularity&apiKey=${API_KEY}`;
-// let req = new Request(query);
+///////////////////*** Functions: News Pane related */
 
-// fetch(req)
-//   .then(function (response) {
-//     console.log(response.json());
-//   })
-//   .catch((err) => {
-//     console.log(`${err} is here!!!`);
-//   });
+// Function: Create News Object: Convert a chosen news data into the object that fits our format, and return such object
 
-// Option 2: Async await function
+// Function: Load News: Use a property as id from the chosen news object (address hash?) and render the object properties
+
+// Function: Render News
+
+// Function: Render Spinner for news Pane
+
+// Function: Render Error messages for News Pane
+
+// Function: clear news pane content
+
+///////////////////*** Functions: Search Results related */
+
+// Function: (?)Get Query: Function to return search input value
+
+// Function: Clear Input: Function to clear input value
+
+// Function: Load search results: pass in a string (input query), use it to fetch data, and store results in state object
 const loadSearchResults = async function (query) {
   try {
     // If fetch takes too long, return error
@@ -59,4 +69,55 @@ const loadSearchResults = async function (query) {
   }
 };
 
+// Function: Get Search Results Page: Pass in a page number, and return the array of search results that are on that page
+
+// Function: Render Search Results
+
+// Function: Update Search Results
+
+// Function: Render Spinner for Search Results
+
+// Function: Render Error messages for search results
+
+// Function: Clear Search results
+
+///////////////////*** Functions: Pagination */
+
+// Function: Pagination control: Click on page button, updates search results and page buttons
+
+// Function: Pagination button Render: Display pages (used for default display AND when clicking on page buttons)
+
+///////////////////*** Functions: Auxiliary Functions, Bookmark features */
+
+// Function: init(): local storage, initialize
+
+// Functions: Bookmark (?)
+
+///////////////////** Event Listeners */
+
+// Search button event handler
+
+// Hashchange/load event handler (?)
+
+// Clicking on search results event handler (?)
+
+// Bookmark event handler (?)
+
+///////////////////*** Function calls */
 loadSearchResults(searchQuery);
+
+//////////////////////////////////////////////////////////
+// Backup code pieces
+
+// Ajax Fetch query code
+// // Option 1: use Fetch.then.
+// let query = `${API_URL_SEARCH}${searchQuery}&from=2023-10-09&sortBy=popularity&apiKey=${API_KEY}`;
+// let req = new Request(query);
+
+// fetch(req)
+//   .then(function (response) {
+//     console.log(response.json());
+//   })
+//   .catch((err) => {
+//     console.log(`${err} is here!!!`);
+//   });
