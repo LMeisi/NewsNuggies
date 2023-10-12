@@ -65,6 +65,7 @@ const loadSearchResults = async function (query) {
     // If response status isn't OK, throw new error()
     if (!response.ok) throw new Error(`${response.status}: ${data.message}`);
 
+    // Save articles to state object
     // Convert(map) the 'data' object into the object of your own format
     state.search.resultsToDisplay = data.articles.map((art) => {
       return {
@@ -75,8 +76,15 @@ const loadSearchResults = async function (query) {
       };
     });
 
-    // ***Set page number to 1 (by default)
+    // assign totalResults property to state object
+    state.search.totalResults = data.totalResults;
+    // assign query property to state object
+    state.search.query = query;
+
+    // ***??? Set page number to 1 (by default)
     state.search.page = 1;
+
+    console.log(state);
 
     // ***START HERE: Test above state object after above code execution
 
