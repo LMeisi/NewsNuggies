@@ -15,8 +15,8 @@ const state = {
   news: {}, // Pick and Copy from state.search.resultsToRender array based on some form of id (what?)
   search: {
     query: "",
-    results: [], // All returned results for the query
-    resultsToRender: [], // results to be displayed on page, chosen result will be copied into the state.news object
+    totalResults: 0, // Number of total search results for the query
+    resultsToDisplay: [], // Results (articles) actually received on query and to be displayed on page, a chosen result will be copied into the state.news object
     page: 1, //state variable for current page number (that's being displayed), pagination will use this variable
     resultsPerPage: RES_PER_PAGE, // 'resultsPerPage' is how many results we want shown on one page of search results, get it from config.js (RES_PER_PAGE)
   },
@@ -65,11 +65,23 @@ const loadSearchResults = async function (query) {
     // If response status isn't OK, throw new error()
     if (!response.ok) throw new Error(`${response.status}: ${data.message}`);
 
-    // If no error, return data
-    // return data;
+    // Convert(map) the 'data' object into the object of your own format
+    state.search.resultsToDisplay = data.articles.map((art) => {
+      return {
+        title: art.title, // article title
+        url: art.url, // article address
+        source: art.source.name, // e.g. a website name
+        publishedAt: art.publishedAt, // time of publish
+      };
+    });
 
-    // console.log(data.articles[0].content);
+    // ***Set page number to 1 (by default)
+    state.search.page = 1;
+
+    // ***START HERE: Test above state object after above code execution
+
     // Need below data to render
+    // console.log(data.articles[0].content); // Below data only for own understanding
     console.log("Total Results:", data.totalResults);
     console.log("Title:", data.articles[0].title);
     console.log("Description:", data.articles[0].description);
@@ -78,7 +90,6 @@ const loadSearchResults = async function (query) {
     console.log("PublishTime:", data.articles[0].publishedAt);
     console.log("Author:", data.articles[0].author);
     console.log("Source name:", data.articles[0].source.name);
-    // Page number? Page size?
   } catch (err) {
     //Temp error handling
     console.error(`${err}🩳🩳`);
@@ -123,6 +134,8 @@ const loadSearchResults = async function (query) {
 loadSearchResults(searchQuery);
 
 //////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
 // Backup code pieces
 
 // Ajax Fetch query code
