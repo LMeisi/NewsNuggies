@@ -31,14 +31,14 @@ body {
   line-height: 1.6;
 }
 
-.container {
+.container-box {
   max-width: 120rem;
   min-height: 117rem;
   background-color: #fff;
   border-radius: 9px;
   grid-template:
     "head head" 10rem
-    "list recipe" minmax(100rem, auto)
+    "list news" minmax(100rem, auto)
     / 1fr 2fr;
   margin: 4vw auto;
   display: grid;
@@ -808,3 +808,9 @@ body {
 }
 
 /*# sourceMappingURL=index.f7626f62.css.map */
+
+/* ////////////////////////////// */
+/* New Formats */
+.news-img {
+  max-width: 100%;
+}

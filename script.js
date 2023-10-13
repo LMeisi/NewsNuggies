@@ -71,6 +71,7 @@ const loadSearchResults = async function (query) {
       return {
         title: art.title, // article title
         url: art.url, // article address
+        urlToImage: art.urlToImage, // article image
         source: art.source.name, // e.g. a website name
         publishedAt: art.publishedAt, // time of publish
       };
@@ -92,6 +93,7 @@ const loadSearchResults = async function (query) {
     // console.log(data.articles[0].content); // Below data only for own understanding
     console.log("Total Results:", data.totalResults);
     console.log("Title:", data.articles[0].title);
+    console.log("Content:", data.articles[0].content);
     console.log("Description:", data.articles[0].description);
     console.log("URL:", data.articles[0].url);
     console.log("URLtoImage:", data.articles[0].urlToImage);
