@@ -46,7 +46,9 @@ const state = {
 
 // Function: (?)Get Query: Function to return search input value
 function getQuery() {
+  // Store input value to 'query'
   const query = document.querySelector(".search__field").value;
+  // Clear input value
   clearInput();
   return query;
 }
@@ -116,7 +118,20 @@ const loadSearchResults = async function (query) {
   }
 };
 
+// ***************Start here!!!
 // Function: Get Search Results Page: Pass in a page number, and return the array of search results that are on that page
+// Default number is in the state object (when clicking on search button, page 1 is returned)
+function getSearchResultsPage(page = state.search.page) {
+  state.search.page = page; // assign new page number to state object
+
+  //'page' represents the number of the page to be rendered
+  // 'resultsPerPage' is how many results we want shown on one page of preview
+  //e.g. If we want 10 results on page, then below multiply by 10
+  //e.g. page '1' below will return 0, and 10...
+  // e.g. ...the slice method below will cut the results before array[0] and before array[10] (i.e. [0] thru [9])
+  const start = (page - 1) * state.search.resultsPerPage; // 0;
+  const end = page * state.search.resultsPerPage; // 9;
+}
 
 // Function: Render Search Results
 
@@ -153,6 +168,7 @@ searchButton.addEventListener("click", function () {
   // Get query input and save to searchQuery
   let searchQuery = getQuery();
   console.log(searchQuery);
+
   // Pass in the search query and save results to state object
   loadSearchResults(searchQuery);
 });
