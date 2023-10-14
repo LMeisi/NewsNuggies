@@ -100,13 +100,13 @@
     <div class="container-box">
       <header class="header">
         <img src="img/logo.png" alt="Logo" class="header__logo" />
-        <form class="search">
+        <form class="search" id="searchForm">
           <input
             type="text"
             class="search__field"
             placeholder="Search over 1,000,000 News..."
           />
-          <button class="btn search__btn">
+          <button class="btn search__btn" type="button">
             <svg class="search__icon">
               <use href="img/icons.svg#icon-search"></use>
             </svg>
@@ -125,7 +125,7 @@
               </button>
             </li> -->
             <li class="nav__item">
-              <button class="nav__btn nav__btn--bookmarks">
+              <button class="nav__btn nav__btn--bookmarks" type="button">
                 <svg class="nav__icon">
                   <use href="img/icons.svg#icon-bookmark"></use>
                 </svg>
@@ -218,7 +218,9 @@
                   <div class="preview-data col-8 d-flex flex-column">
                     <p class="preview__publisher">Engadget</p>
                     <h4 class="preview__title">
-                      These Four New Games Are Coming to Apple Arcade This Month
+                      <!-- Using the fade out way to fade out multiple line truncation https://css-tricks.com/line-clampin/ -->
+                      Everything announced at today's Apple event: iPhone 15,
+                      USB-C, Apple Watch Series 9 and more
                     </h4>
                   </div>
                   <!-- Col containing url img -->
@@ -243,7 +245,11 @@
                   <div
                     class="preview-bookmark-container col-4 d-flex justify-content-end"
                   >
-                    <ion-icon name="bookmark-outline"></ion-icon>
+                    <button class="btn--round btn-round-preview" type="button">
+                      <svg class="">
+                        <use href="img/icons.svg#icon-bookmark-fill"></use>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -257,9 +263,10 @@
                 <div class="preview-info row">
                   <!-- Col containing source and title - flexbox -->
                   <div class="preview-data col-8 d-flex flex-column">
-                    <p class="preview__publisher">Engadget</p>
+                    <p class="preview__publisher mb-1">Engadget</p>
                     <h4 class="preview__title">
-                      These Four New Games Are Coming to Apple Arcade This Month
+                      Everything announced at today's Apple event: iPhone 15,
+                      USB-C, Apple Watch Series 9 and more
                     </h4>
                   </div>
                   <!-- Col containing url img -->
@@ -268,7 +275,7 @@
                   >
                     <figure class="preview__fig">
                       <img
-                        src="https://i.kinja-img.com/image/upload/c_fill,f_auto,fl_progressive,g_center,h_675,pg_1,q_80,w_1200/6c47aa6b2516616722ec1a0a39050523.png"
+                        src="https://i.kinja-img.com/gawker-media/image/upload/c_fill,f_auto,fl_progressive,g_center,h_675,pg_1,q_80,w_1200/204163c57fbfd7e0b8caac63e0e19bc6.jpg"
                         alt="newsImg"
                       />
                     </figure>
@@ -284,7 +291,11 @@
                   <div
                     class="preview-bookmark-container col-4 d-flex justify-content-end"
                   >
-                    <ion-icon name="bookmark-outline"></ion-icon>
+                    <button class="btn--round btn-round-preview" type="button">
+                      <svg class="">
+                        <use href="img/icons.svg#icon-bookmark-fill"></use>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -302,6 +313,7 @@
         <div class="pagination row">
           <button
             class="btn--inline col-4 pagination__btn--prev justify-content-center"
+            type="button"
           >
             <ion-icon name="arrow-back-outline"></ion-icon>
             <span class="">Page 1</span>
@@ -310,6 +322,7 @@
           <div class="col-4"></div>
           <button
             class="btn--inline col-4 pagination__btn--next justify-content-center"
+            type="button"
           >
             <span>Page 3</span>
             <ion-icon name="arrow-forward-outline"></ion-icon>
@@ -360,7 +373,9 @@
         <div class="news-header d-flex flex-column px-5 pt-5 pb-4">
           <!-- source -->
           <div class="news-source-container">
-            <p class="news-source fs-4 fw-bold fst-italic align-middle mb-1">
+            <p
+              class="news-source fs-5 fw-bold align-middle mb-1 text-uppercase"
+            >
               Engadget
             </p>
           </div>
@@ -405,17 +420,24 @@
 
         <!-- news source button -->
         <div
-          class="news-source-btn-container px-5 pt-2 d-flex justify-content-center"
+          class="news-source-btn-container px-5 pt-1 d-flex justify-content-between align-items-center"
         >
           <a
-            class="news-source-btn-link text-decoration-none"
+            class="news-source-btn-link text-decoration-none me-3"
             href="https://lifehacker.com/these-four-new-games-are-coming-to-apple-arcade-this-mo-1850896428"
           >
-            <button class="btn news-source-btn">
+            <button class="btn news-source-btn ms-1" type="button">
               <!-- <svg class="search__icon">
               <use href="img/icons.svg#icon-search"></use>
             </svg> -->
               <span>See Full Article</span>
+            </button>
+          </a>
+          <a class="news-source-btn-bookmark text-decoration-none me-5" href="">
+            <button class="btn--round" type="button">
+              <svg class="">
+                <use href="img/icons.svg#icon-bookmark-fill"></use>
+              </svg>
             </button>
           </a>
         </div>

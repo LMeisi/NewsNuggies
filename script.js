@@ -9,6 +9,9 @@ import { RES_PER_PAGE } from "./config.js";
 // Import Timeout function from helpers.js
 import { timeout } from "./helpers.js";
 
+// Element Definitions
+const searchButton = document.querySelector(".search__btn");
+
 // Create State object - Object that contains the data for the current search query and results
 // Consider updating/clearing every time 'search' button is clicked?
 const state = {
@@ -23,8 +26,7 @@ const state = {
   bookmarks: [],
 };
 
-let searchQuery = "Apple";
-
+//////////////////////////////////////////////////////////
 ///////////////////*** Functions: News Pane related */
 
 // Function: Create News Object: Convert a chosen news data into the object that fits our format, and return such object
@@ -39,13 +41,21 @@ let searchQuery = "Apple";
 
 // Function: clear news pane content
 
+//////////////////////////////////////////////////////////
 ///////////////////*** Functions: Search Results related */
 
 // Function: (?)Get Query: Function to return search input value
-
+function getQuery() {
+  const query = document.querySelector(".search__field").value;
+  clearInput();
+  return query;
+}
 // Function: Sorting method (?) How to incorporate into get query function?
 
 // Function: Clear Input: Function to clear input value
+function clearInput() {
+  document.querySelector(".search__field").value = "";
+}
 
 // Function: Load search results: pass in a string (input query), use it to fetch data, and store results in state object
 const loadSearchResults = async function (query) {
@@ -118,21 +128,34 @@ const loadSearchResults = async function (query) {
 
 // Function: Clear Search results
 
+//////////////////////////////////////////////////////////
 ///////////////////*** Functions: Pagination */
 
 // Function: Pagination control: Click on page button, updates search results and page buttons
 
 // Function: Pagination button Render: Display pages (used for default display AND when clicking on page buttons)
 
+//////////////////////////////////////////////////////////
 ///////////////////*** Functions: Auxiliary Functions, Bookmark features */
 
 // Function: init(): local storage, initialize
 
 // Functions: Bookmark (?)
 
+//////////////////////////////////////////////////////////
+///////////////////*** Control Flow */
+
+//////////////////////////////////////////////////////////
 ///////////////////** Event Listeners */
 
 // Search button event handler
+searchButton.addEventListener("click", function () {
+  // Get query input and save to searchQuery
+  let searchQuery = getQuery();
+  console.log(searchQuery);
+  // Pass in the search query and save results to state object
+  loadSearchResults(searchQuery);
+});
 
 // Hashchange/load event handler (?)
 
@@ -140,8 +163,11 @@ const loadSearchResults = async function (query) {
 
 // Bookmark event handler (?)
 
-///////////////////*** Function calls */
-loadSearchResults(searchQuery);
+// Sort by Relevancy button click
+
+// Sort by Relevancy Date click
+
+// Sort by Relevancy Popularity click
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
