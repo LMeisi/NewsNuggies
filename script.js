@@ -171,6 +171,9 @@ function renderSearchResults(data) {
 
 // Function: Render Spinner for Search Results
 function renderSpinnerSearchResults() {
+  // Clear search results pane
+  clearSearchResults();
+
   const markup = `
     <div class="spinner spinner-search">
       <svg>
@@ -178,8 +181,6 @@ function renderSpinnerSearchResults() {
       </svg>
     </div>`;
 
-  // Clear sorting options container and search results
-  clearSearchResults();
   // render spinner
   searchResults.insertAdjacentHTML("afterbegin", markup);
 }
@@ -254,6 +255,9 @@ searchButton.addEventListener("click", function () {
   if (searchQuery == "") {
     return;
   }
+
+  // render spinner in search results
+  renderSpinnerSearchResults();
 
   // Pass in the search query and page number (default is 1) to save results to state object
   loadSearchResults(searchQuery, 1);
