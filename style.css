@@ -442,7 +442,7 @@ body {
 }
 
 .preview__fig {
-  height: 5.8rem;
+  height: 6.8rem;
   backface-visibility: hidden;
   border-radius: 10%;
   /* flex: 0 0 5.8rem; */
@@ -497,6 +497,11 @@ body {
   text-transform: uppercase;
   font-size: 1.15rem;
   font-weight: 600;
+}
+
+/* ***NEWLY ADDED */
+.preview-pub-time {
+  margin-bottom: 0;
 }
 
 .preview__user-generated {

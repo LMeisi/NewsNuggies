@@ -97,6 +97,7 @@ const loadSearchResults = async function (
     // console.log("Title:", data.articles[0].title);
 
     // If response status isn't OK, throw new error()
+    // NOTE: If no results are returned, no error will be thrown, empty results array will be saved to search results. When render, this error will be guarded and checked to print error message
     if (!response.ok) throw new Error(`${response.status}: ${data.message}`);
 
     // Save articles to state object (below way not needed, just save data.article directly into resultsToDisplay object)
@@ -160,16 +161,75 @@ const loadSearchResults = async function (
 
 // Function: Render Search Results
 function renderSearchResults(data) {
-  // Clear current results and sort options
+  // Clear current results and sort options container
   clearSearchResults();
 
   // ***START HERE:Check again to see if works
-  // Guard Clause, if results are not valid, return error
+  // Guard Clause, if returned results are empty (no results returned), render error
   if (data.length == 0) {
     renderErrorSearchResults();
   }
 
-  // ***START HERE: how to render if results are valid; check
+  // checking
+  console.log(data);
+
+  // Generate markup for each search result, map and join them into one html code string
+  // NOTE::: <!-- Using the fade out way to fade out multiple line truncation for result.title: https://css-tricks.com/line-clampin/ -->
+  const resultsMarkup = data
+    .map((result) => {
+      return `<li class="preview">
+            <a class="preview__link" href="">
+              <!-- Flexbox Vertical -->
+              <div class="preview-container d-flex flex-column">
+                <!-- Top grid -->
+                <div class="preview-info row">
+                  <!-- Col containing source and title - flexbox -->
+                  <div class="preview-data col-8 d-flex flex-column">
+                    <p class="preview__publisher">${result.source.name}</p>
+                    <h4 class="preview__title">
+                      ${result.title}
+                    </h4>
+                  </div>
+                  <!-- Col containing url img -->
+                  <div
+                    class="preview-fig-container col-4 d-flex justify-content-end"
+                  >
+                    <figure class="preview__fig">
+                      <img
+                        src="${result.urlToImage}"
+                        alt="newsImg"
+                      />
+                    </figure>
+                  </div>
+                </div>
+                <!-- Bottom grid -->
+                <div class="preview-support-info row align-items-center">
+                  <!-- Published time from now -->
+                  <div class="preview-pub-time-container col-8">
+                    <p class="preview-pub-time">10 hours ago</p>
+                  </div>
+                  <!-- Bookmark? -->
+                  <div
+                    class="preview-bookmark-container col-4 d-flex justify-content-end"
+                  >
+                    <button class="btn--round btn-round-preview" type="button">
+                      <svg class="">
+                        <use href="img/icons.svg#icon-bookmark-fill"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </li>`;
+    })
+    .join("");
+
+  // render results options container
+  renderResultsOptions();
+
+  // render results
+  results.insertAdjacentHTML("afterbegin", resultsMarkup);
 }
 
 // Function: Update Search Results
@@ -191,6 +251,7 @@ function renderSpinnerSearchResults() {
 }
 
 // Function: Render Error messages for search results
+// If no argument passed, use default message
 function renderErrorSearchResults(
   errorMsg = "No news found for your query! Please try another one!"
 ) {
@@ -198,7 +259,7 @@ function renderErrorSearchResults(
   console.log(errorMsg);
 
   // Generate markup
-  const markup = `
+  const errorMarkup = `
     <div class="error error-search">
       <div>
         <svg>
@@ -212,7 +273,34 @@ function renderErrorSearchResults(
   // Clear sorting options container and search results & pagination - Not needed, renderSearchResults already cleared it
 
   // render error message
-  searchResults.insertAdjacentHTML("afterbegin", markup);
+  searchResults.insertAdjacentHTML("afterbegin", errorMarkup);
+}
+
+// Renders result options container (used for when rendering search results)
+function renderResultsOptions() {
+  const optionsMarkup = `<!-- "sort by" -->
+  <div class="sort-title col-5">
+    <p>Sort by:</p>
+  </div>
+  <!-- sort options -->
+  <div class="sort-container col-7 d-flex justify-content-around">
+    <div class="sort-opion">
+      <a class="sort-btn-relevancy" href="">
+        <p>Relevancy</p>
+      </a>
+    </div>
+    <div class="sort-opion">
+      <a class="sort-btn-relevancy" href="">
+        <p>Date</p>
+      </a>
+    </div>
+    <div class="sort-opion">
+      <a class="sort-btn-relevancy" href="">
+        <p>Popularity</p>
+      </a>
+    </div>`;
+
+  resultsOptions.insertAdjacentHTML("afterbegin", optionsMarkup);
 }
 
 // Function: Clear Search results
