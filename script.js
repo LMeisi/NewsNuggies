@@ -122,37 +122,41 @@ const loadSearchResults = async function (
 
     // Checking state object
     console.log(state);
+    console.log(state.search.resultsToDisplay);
     console.log("Source name:", state.search.resultsToDisplay[0].source.name);
     console.log("Sort by:", state.search.sortBy);
     console.log("query:", state.search.query);
 
-    // Return results for rendering
-    // return search.resultsToDisplay;
+    // What does it return? Looks program is the same if I don't specify 'return' below (?)
+    return;
   } catch (err) {
     //Temp error handling
     console.error(`${err}🩳🩳`);
-    // Check: resultsToDisplay is empty
-    console.log(state);
+
+    // return err
+    throw err;
   }
 };
 
-// Below function NO NEED for loading results - Above function will save selected array to display in state
+// **********************************************************************************************************************
+// Below function NOT NEEDED for loading results - Above function will save selected array to display in state
 // Function: Get Search Results Page: Pass in a page number, and return the array of search results that are on that page
 // Default number is in the state object (when clicking on search button, page 1 is returned)
-function getSearchResultsPage(page = state.search.page) {
-  state.search.page = page; // assign new page number to state object
+// function getSearchResultsPage(page = state.search.page) {
+// state.search.page = page; // assign new page number to state object
 
-  //'page' represents the number of the page to be rendered
-  // 'resultsPerPage' is how many results we want shown on one page of preview
-  //e.g. If we want 10 results on page, then below multiply by 10
-  //e.g. page '1' below will return 0, and 10...
-  // e.g. ...the slice method below will cut the results before array[0] and before array[10] (i.e. [0] thru [9])
-  const start = (page - 1) * state.search.resultsPerPage; // 0;
-  const end = page * state.search.resultsPerPage; // 9;
+//'page' represents the number of the page to be rendered
+// 'resultsPerPage' is how many results we want shown on one page of preview
+//e.g. If we want 10 results on page, then below multiply by 10
+//e.g. page '1' below will return 0, and 10...
+// e.g. ...the slice method below will cut the results before array[0] and before array[10] (i.e. [0] thru [9])
+// const start = (page - 1) * state.search.resultsPerPage; // 0;
+// const end = page * state.search.resultsPerPage; // 9;
 
-  //Return the selected results only
-  return state.search.resultsToDisplay;
-}
+//Return the selected results only
+//   return state.search.resultsToDisplay;
+// }
+// **********************************************************************************************************************
 
 // Function: Render Search Results
 function renderSearchResults(data) {
@@ -165,8 +169,9 @@ function renderSearchResults(data) {
     renderErrorSearchResults();
   }
 
-  // ***START HERE: how to render;
+  // ***START HERE: how to render if results are valid; check
 }
+
 // Function: Update Search Results
 
 // Function: Render Spinner for Search Results
@@ -186,9 +191,10 @@ function renderSpinnerSearchResults() {
 }
 
 // Function: Render Error messages for search results
-function renderErrorSearchResults() {
-  // Error Msg
-  const errorMsg = "No News found for your query! Please try another one!";
+function renderErrorSearchResults(
+  errorMsg = "No news found for your query! Please try another one!"
+) {
+  // Error Msg check
   console.log(errorMsg);
 
   // Generate markup
@@ -259,14 +265,31 @@ searchButton.addEventListener("click", function () {
   // render spinner in search results
   renderSpinnerSearchResults();
 
+  // Use .then to render loaded results
+  //  Call async LoadSearchResults, after results come back, then render the results, otherwise, wont work!!!
   // Pass in the search query and page number (default is 1) to save results to state object
-  loadSearchResults(searchQuery, 1);
-  // Check
-  console.log(state.search.resultsToDisplay);
+  loadSearchResults(searchQuery, 1)
+    .then((p) => {
+      // p is the returned promise, not sure what it is, but doesn't matter, just need to use then here.
+      // Check statements
+      console.log(state.search.resultsToDisplay);
 
-  // Render search results based on resultsToDisplay in state object
-  const resultsToRender = state.search.resultsToDisplay;
-  renderSearchResults(resultsToRender);
+      // Clear spinner
+      clearSearchResults();
+      // Render search results based on resultsToDisplay in state object
+      // Render doesn't need to be async, all data is already local
+      renderSearchResults(state.search.resultsToDisplay);
+
+      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+    })
+    .catch((err) => {
+      // Clear spinner
+      clearSearchResults();
+
+      // If search returns error, loadSearResults will return a Promise with an error as its value, that error is caught and error message will be printed
+      console.log(err);
+      renderErrorSearchResults();
+    });
 });
 
 // Hashchange/load event handler (?)
