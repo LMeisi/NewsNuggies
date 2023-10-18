@@ -533,6 +533,13 @@ body {
   list-style: none;
 }
 
+/* NEW ADDED */
+.results-options {
+  padding-left: 5.25rem; /* 2rem + 3.25rem, check results css */
+  padding-right: 3.25rem;
+  font-size: 1.15rem;
+}
+
 .pagination {
   margin-top: auto;
   padding: 0 3.5rem;

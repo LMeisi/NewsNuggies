@@ -30,7 +30,7 @@ const state = {
     resultsToDisplay: [], // Results (articles) actually received on query and to be displayed on page, a chosen result will be copied into the state.news object
     page: 1, //state variable for current page number (that's being displayed), pagination will use this variable
     resultsPerPage: RES_PER_PAGE, // 'resultsPerPage' is how many results we want shown on one page of search results, get it from config.js (RES_PER_PAGE)
-    sortBy: "relevancy", // By default, set search results to sort by relevancy
+    sortBy: "popularity", // By default, set search results to sort by popularity
   },
   bookmarks: [],
 };
@@ -73,12 +73,17 @@ function clearInput() {
   document.querySelector(".search__field").value = "";
 }
 
+// ********TO DO: add a state variable as input, so when clicking on search button is the initial search, when that happens state variable is true, then change the 'sortby' property to default "by popularity", otherwise, don't change the 'sortby' property
+// ********SOMEHOW the time displayed isn't right...check if moment.js actually works
+
 // Function: Load search results: pass in a string (input query) & page number, use it to fetch data, and store results and search metadata in state object
 const loadSearchResults = async function (
   query = state.search.query,
   pageNum = state.search.page
 ) {
   try {
+    // Test
+    console.log(state.search.sortBy);
     // If fetch takes too long, return error
     // Use current sortBy and resultsPerPage values in state object
     const response = await Promise.race([
@@ -177,6 +182,14 @@ function renderSearchResults(data) {
   // NOTE::: <!-- Using the fade out way to fade out multiple line truncation for result.title: https://css-tricks.com/line-clampin/ -->
   const resultsMarkup = data
     .map((result) => {
+      // Extracting publishing date from publishedAt
+      const year = result.publishedAt.substring(0, 4);
+      const month = result.publishedAt.substring(5, 7);
+      const date = result.publishedAt.substring(8, 10);
+      const dateArray = [year, month, date];
+      // console.log(dateArray);
+
+      // return generated markup
       return `<li class="preview">
             <a class="preview__link" href="">
               <!-- Flexbox Vertical -->
@@ -206,7 +219,7 @@ function renderSearchResults(data) {
                 <div class="preview-support-info row align-items-center">
                   <!-- Published time from now -->
                   <div class="preview-pub-time-container col-8">
-                    <p class="preview-pub-time">10 hours ago</p>
+                    <p class="preview-pub-time">${moment(dateArray).toNow()}</p>
                   </div>
                   <!-- Bookmark? -->
                   <div
@@ -230,6 +243,8 @@ function renderSearchResults(data) {
 
   // render results
   results.insertAdjacentHTML("afterbegin", resultsMarkup);
+
+  // ************START HERE::: Render Pagination buttons on search
 }
 
 // Function: Update Search Results
@@ -284,18 +299,18 @@ function renderResultsOptions() {
   </div>
   <!-- sort options -->
   <div class="sort-container col-7 d-flex justify-content-around">
-    <div class="sort-opion">
-      <a class="sort-btn-relevancy" href="">
+    <div class="sort-option sort-option-relevancy">
+      <button class="btn-sort sort-btn-relevancy text-decoration-none bg-transparent border-0" type="button">
         <p>Relevancy</p>
       </a>
     </div>
-    <div class="sort-opion">
-      <a class="sort-btn-relevancy" href="">
+    <div class="sort-option sort-option-date">
+      <button class="btn-sort sort-btn-date text-decoration-none bg-transparent border-0" type="button">
         <p>Date</p>
       </a>
     </div>
-    <div class="sort-opion">
-      <a class="sort-btn-relevancy" href="">
+    <div class="sort-option sort-option-popularity">
+      <button class="btn-sort sort-btn-popularity text-decoration-none bg-transparent border-0" type="button">
         <p>Popularity</p>
       </a>
     </div>`;
@@ -386,12 +401,114 @@ searchButton.addEventListener("click", function () {
 
 // Bookmark event handler (?)
 
-// Sort by Relevancy button click
+// EVENT LISTENER: Sort by Relevancy click
+// NOTE: Vanilla javascript won't work here unless use event.target, jQuery is easier here
+$("body").on("click", ".sort-btn-relevancy", function (e) {
+  console.log("sort by relevancy");
 
-// Sort by Relevancy Date click
+  // Save new sortby value to state object
+  state.search.sortBy = "relevancy";
 
-// Sort by Relevancy Popularity click
+  // render spinner in search results
+  renderSpinnerSearchResults();
 
+  // Same as above, Call async LoadSearchResults, after results come back, then render the results, otherwise, wont work!!!
+  // Pass in the search query and page number (default is 1) to save results to state object
+  loadSearchResults(state.search.query, state.search.page)
+    .then((p) => {
+      // p is the returned promise, not sure what it is, but doesn't matter, just need to use then here.
+      // Check statements
+      console.log(state.search.resultsToDisplay);
+
+      // Clear spinner
+      clearSearchResults();
+      // Render search results based on resultsToDisplay in state object
+      // Render doesn't need to be async, all data is already local
+      renderSearchResults(state.search.resultsToDisplay);
+
+      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+    })
+    .catch((err) => {
+      // Clear spinner
+      clearSearchResults();
+
+      // If search returns error, loadSearResults will return a Promise with an error as its value, that error is caught and error message will be printed
+      console.log(err);
+      renderErrorSearchResults();
+    });
+});
+
+// EVENT LISTENER: Sort by Date click
+$("body").on("click", ".sort-btn-date", function (e) {
+  console.log("sort by published date clicked");
+
+  // Save new sortby value to state object
+  state.search.sortBy = "publishedAt";
+
+  // render spinner in search results
+  renderSpinnerSearchResults();
+
+  // Same as above, Call async LoadSearchResults, after results come back, then render the results, otherwise, wont work!!!
+  // Pass in the search query and page number (default is 1) to save results to state object
+  loadSearchResults(state.search.query, state.search.page)
+    .then((p) => {
+      // p is the returned promise, not sure what it is, but doesn't matter, just need to use then here.
+      // Check statements
+      console.log(state.search.resultsToDisplay);
+
+      // Clear spinner
+      clearSearchResults();
+      // Render search results based on resultsToDisplay in state object
+      // Render doesn't need to be async, all data is already local
+      renderSearchResults(state.search.resultsToDisplay);
+
+      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+    })
+    .catch((err) => {
+      // Clear spinner
+      clearSearchResults();
+
+      // If search returns error, loadSearResults will return a Promise with an error as its value, that error is caught and error message will be printed
+      console.log(err);
+      renderErrorSearchResults();
+    });
+});
+
+// EVENT LISTENER: Sort by Popularity click
+$("body").on("click", ".sort-btn-popularity", function (e) {
+  console.log("sort by popularity clicked");
+
+  // Save new sortby value to state object
+  state.search.sortBy = "popularity";
+
+  // render spinner in search results
+  renderSpinnerSearchResults();
+
+  // Same as above, Call async LoadSearchResults, after results come back, then render the results, otherwise, wont work!!!
+  // Pass in the search query and page number (default is 1) to save results to state object
+  loadSearchResults(state.search.query, state.search.page)
+    .then((p) => {
+      // p is the returned promise, not sure what it is, but doesn't matter, just need to use then here.
+      // Check statements
+      console.log(state.search.resultsToDisplay);
+
+      // Clear spinner
+      clearSearchResults();
+      // Render search results based on resultsToDisplay in state object
+      // Render doesn't need to be async, all data is already local
+      renderSearchResults(state.search.resultsToDisplay);
+
+      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+    })
+    .catch((err) => {
+      // Clear spinner
+      clearSearchResults();
+
+      // If search returns error, loadSearResults will return a Promise with an error as its value, that error is caught and error message will be printed
+      console.log(err);
+      renderErrorSearchResults();
+    });
+});
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
