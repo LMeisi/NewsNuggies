@@ -9,6 +9,9 @@ import { RES_PER_PAGE } from "./config.js";
 // Import Timeout function from helpers.js
 import { timeout } from "./helpers.js";
 
+// day.js
+// import relativeTime from "./node_modules/dayjs/plugin/relativeTime.js"; // display relativeTime
+
 // Element Definitions
 const searchButton = document.querySelector(".search__btn");
 
@@ -34,6 +37,10 @@ const state = {
   },
   bookmarks: [],
 };
+
+// State Variables
+// Search button click State: If it's search by 'search button' click, variable is true, otherwise (if clicking on sort buttons), false; default to true
+let searchBtnClick = true;
 
 //////////////////////////////////////////////////////////
 ///////////////////*** Functions: News Pane related */
@@ -74,15 +81,17 @@ function clearInput() {
 }
 
 // ********TO DO: add a state variable as input, so when clicking on search button is the initial search, when that happens state variable is true, then change the 'sortby' property to default "by popularity", otherwise, don't change the 'sortby' property
-// ********SOMEHOW the time displayed isn't right...check if moment.js actually works
-
 // Function: Load search results: pass in a string (input query) & page number, use it to fetch data, and store results and search metadata in state object
 const loadSearchResults = async function (
   query = state.search.query,
   pageNum = state.search.page
 ) {
   try {
-    // Test
+    // Check if it's search button click, if so, assign 'popularity' to search results; Otherwise, do nothing.
+    if (searchBtnClick) {
+      state.search.sortBy = "popularity";
+    }
+    // Test sort options
     console.log(state.search.sortBy);
     // If fetch takes too long, return error
     // Use current sortBy and resultsPerPage values in state object
@@ -134,7 +143,7 @@ const loadSearchResults = async function (
     console.log("query:", state.search.query);
 
     // What does it return? Looks program is the same if I don't specify 'return' below (?)
-    return;
+    return state.search.resultsToDisplay;
   } catch (err) {
     //Temp error handling
     console.error(`${err}🩳🩳`);
@@ -164,31 +173,25 @@ const loadSearchResults = async function (
 // }
 // **********************************************************************************************************************
 
-// Function: Render Search Results
+// Function: Render Search Results ('data' argument passed in is state.search)
 function renderSearchResults(data) {
-  // Clear current results and sort options container
+  // Clear results, resultOptions, pagination, also: error/spinner if available
   clearSearchResults();
 
   // ***START HERE:Check again to see if works
   // Guard Clause, if returned results are empty (no results returned), render error
-  if (data.length == 0) {
+  if (data.resultsToDisplay.length == 0) {
     renderErrorSearchResults();
   }
 
   // checking
-  console.log(data);
+  console.log(data.resultsToDisplay);
 
   // Generate markup for each search result, map and join them into one html code string
   // NOTE::: <!-- Using the fade out way to fade out multiple line truncation for result.title: https://css-tricks.com/line-clampin/ -->
-  const resultsMarkup = data
+  // Use moment.js here moment(result.publishedAt).fromNow() to get the time difference from publishedAt till now. moment.js API takes in the format directly and spits out '... ago'
+  const resultsMarkup = data.resultsToDisplay
     .map((result) => {
-      // Extracting publishing date from publishedAt
-      const year = result.publishedAt.substring(0, 4);
-      const month = result.publishedAt.substring(5, 7);
-      const date = result.publishedAt.substring(8, 10);
-      const dateArray = [year, month, date];
-      // console.log(dateArray);
-
       // return generated markup
       return `<li class="preview">
             <a class="preview__link" href="">
@@ -219,7 +222,9 @@ function renderSearchResults(data) {
                 <div class="preview-support-info row align-items-center">
                   <!-- Published time from now -->
                   <div class="preview-pub-time-container col-8">
-                    <p class="preview-pub-time">${moment(dateArray).toNow()}</p>
+                    <p class="preview-pub-time">${moment(
+                      result.publishedAt
+                    ).fromNow()}</p>
                   </div>
                   <!-- Bookmark? -->
                   <div
@@ -238,13 +243,88 @@ function renderSearchResults(data) {
     })
     .join("");
 
-  // render results options container
-  renderResultsOptions();
-
   // render results
   results.insertAdjacentHTML("afterbegin", resultsMarkup);
 
-  // ************START HERE::: Render Pagination buttons on search
+  // render results options container
+  renderResultsOptions(data.totalResults, data.resultsPerPage);
+
+  // Render Pagination, pass in current page number (state.search.page)
+  renderPagination(data.totalResults, data.resultsPerPage, data.page);
+}
+
+// Function: Render Pagination based on current page displayed
+function renderPagination(totalResults, resultsPerPage, curPage) {
+  // Total number of pages to be displayed for this particular search
+  const numPages = Math.ceil(totalResults / resultsPerPage);
+  console.log(numPages);
+
+  // Use data attribute 'data-goto' to denote what page the button click to go to (internally for JS to understand)
+  // Without data attribute, we wouldn't know which button refers to which page (internally)
+
+  // Case 1: if on Page 1, and there are other pages - display next page button only
+  if (curPage === 1 && numPages > 1) {
+    const markup = `
+      <!-- Empty space  -->
+      <div class="col-4"></div>
+      <div class="col-4"></div>
+      <!-- Next page button  -->
+      <button data-goto="${
+        curPage + 1
+      }" class="btn--inline col-4 pagination__btn--prev justify-content-center" type="button">
+        <span>Page ${curPage + 1}</span>
+        <ion-icon name="arrow-forward-outline"></ion-icon>
+      </button>
+      `;
+
+    pagination.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  // Case 2: if on Last Page - if current page is equal to num of pages - only display previous page button
+  else if (curPage === numPages && numPages > 1) {
+    const markup = `
+      <!-- Next page button  -->
+      <button data-goto="${
+        curPage - 1
+      }" class="btn--inline col-4 pagination__btn--next justify-content-center" type="button">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        <span>Page ${curPage - 1}</span>
+      </button>
+      <!-- Empty space  -->
+      <div class="col-4"></div>
+      <div class="col-4"></div>
+      `;
+
+    pagination.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  // Case 3: if on Other pages - display both previous and next pages buttons
+  else if (curPage < numPages) {
+    const markup = `
+      <!-- Prev page button  -->  
+      <button data-goto="${
+        curPage - 1
+      }" class="btn--inline col-4 pagination__btn--prev justify-content-center" type="button">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        <span>Page ${curPage - 1}</span>
+      </button>
+      <!-- Empty space  -->
+      <div class="col-4"></div>
+      <!-- Next page button  -->
+      <button data-goto="${
+        curPage + 1
+      }" class="btn--inline col-4 pagination__btn--next justify-content-center" type="button">
+          <span>Page ${curPage + 1}</span>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+      </button>
+      `;
+
+    pagination.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  // Case 4: if on Page 1, and there are NO other pages
+  else {
+  } // Don't append any HTML
 }
 
 // Function: Update Search Results
@@ -292,8 +372,20 @@ function renderErrorSearchResults(
 }
 
 // Renders result options container (used for when rendering search results)
-function renderResultsOptions() {
-  const optionsMarkup = `<!-- "sort by" -->
+function renderResultsOptions(totalResults, resultsPerPage) {
+  const optionsMarkup = `
+  <!-- results totals container-->
+  <div class="results-total-container">
+    <div class="results-total d-flex">
+      <p class="results-total-title me-2 mb-1">Total Results:</p>
+      <p class="results-total-num me-5 mb-0 fw-bold">${totalResults}</p>
+      <p class="results-total-page me-2 mb-0">Total Pages:</p>
+      <p class="results-total-page-num mb-0 fw-bold">${Math.ceil(
+        totalResults / resultsPerPage
+      )}</p>
+    </div>
+  </div>
+  <!-- "sort by" -->
   <div class="sort-title col-5">
     <p>Sort by:</p>
   </div>
@@ -304,8 +396,8 @@ function renderResultsOptions() {
         <p>Relevancy</p>
       </a>
     </div>
-    <div class="sort-option sort-option-date">
-      <button class="btn-sort sort-btn-date text-decoration-none bg-transparent border-0" type="button">
+    <div class="sort-option sort-option-publishedat">
+      <button class="btn-sort sort-btn-publishedat text-decoration-none bg-transparent border-0" type="button">
         <p>Date</p>
       </a>
     </div>
@@ -318,7 +410,7 @@ function renderResultsOptions() {
   resultsOptions.insertAdjacentHTML("afterbegin", optionsMarkup);
 }
 
-// Function: Clear Search results
+// Function: Clear Search results: results, resultOptions, pagination, also: error/spinner if available
 function clearSearchResults() {
   // Clear results and resultsOptions and pagination containers
   results.innerHTML = "";
@@ -365,6 +457,9 @@ searchButton.addEventListener("click", function () {
     return;
   }
 
+  // If input exists, set below to true, so when calling loadSearchResults function, sort option will default to 'popularity'
+  searchBtnClick = true;
+
   // render spinner in search results
   renderSpinnerSearchResults();
 
@@ -381,9 +476,7 @@ searchButton.addEventListener("click", function () {
       clearSearchResults();
       // Render search results based on resultsToDisplay in state object
       // Render doesn't need to be async, all data is already local
-      renderSearchResults(state.search.resultsToDisplay);
-
-      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+      renderSearchResults(state.search);
     })
     .catch((err) => {
       // Clear spinner
@@ -409,6 +502,9 @@ $("body").on("click", ".sort-btn-relevancy", function (e) {
   // Save new sortby value to state object
   state.search.sortBy = "relevancy";
 
+  //  Set below to false, not a search button click, so when loading loadSearchResults function, sort option won't default to 'popularity'
+  searchBtnClick = false;
+
   // render spinner in search results
   renderSpinnerSearchResults();
 
@@ -424,9 +520,9 @@ $("body").on("click", ".sort-btn-relevancy", function (e) {
       clearSearchResults();
       // Render search results based on resultsToDisplay in state object
       // Render doesn't need to be async, all data is already local
-      renderSearchResults(state.search.resultsToDisplay);
+      renderSearchResults(state.search);
 
-      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
+      // Render Pagination
     })
     .catch((err) => {
       // Clear spinner
@@ -439,11 +535,14 @@ $("body").on("click", ".sort-btn-relevancy", function (e) {
 });
 
 // EVENT LISTENER: Sort by Date click
-$("body").on("click", ".sort-btn-date", function (e) {
+$("body").on("click", ".sort-btn-publishedat", function (e) {
   console.log("sort by published date clicked");
 
   // Save new sortby value to state object
   state.search.sortBy = "publishedAt";
+
+  //  Set below to false, not a search button click, so when loading loadSearchResults function, sort option won't default to 'popularity'
+  searchBtnClick = false;
 
   // render spinner in search results
   renderSpinnerSearchResults();
@@ -460,7 +559,7 @@ $("body").on("click", ".sort-btn-date", function (e) {
       clearSearchResults();
       // Render search results based on resultsToDisplay in state object
       // Render doesn't need to be async, all data is already local
-      renderSearchResults(state.search.resultsToDisplay);
+      renderSearchResults(state.search);
 
       // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
     })
@@ -481,6 +580,9 @@ $("body").on("click", ".sort-btn-popularity", function (e) {
   // Save new sortby value to state object
   state.search.sortBy = "popularity";
 
+  //  Set below to false, not a search button click, so when loading loadSearchResults function, sort option won't default to 'popularity'
+  searchBtnClick = false;
+
   // render spinner in search results
   renderSpinnerSearchResults();
 
@@ -496,7 +598,7 @@ $("body").on("click", ".sort-btn-popularity", function (e) {
       clearSearchResults();
       // Render search results based on resultsToDisplay in state object
       // Render doesn't need to be async, all data is already local
-      renderSearchResults(state.search.resultsToDisplay);
+      renderSearchResults(state.search);
 
       // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
     })
@@ -526,3 +628,22 @@ $("body").on("click", ".sort-btn-popularity", function (e) {
 //   .catch((err) => {
 //     console.log(`${err} is here!!!`);
 //   });
+
+// BUGS
+// 1. When results return is invalid - especially img, consider replacing img with a custom made local img with logo
+// 2. Sometimes when displaying images (or articles), it moves to the left of the container instead of justifying to the end (right side) WHY??? Height? Width? already set width to 100%...
+// 3. Some result objects would be "REMOVED", how to actually remove those results from my searach results, e.g. below: (note: sometimes author is null, that's fine, maybe use 'content' or 'title' to check for it)
+// {
+// author: null
+// content: "[Removed]"
+// description: "[Removed]"
+// publishedAt: "1970-01-01T00:00:00Z"
+// source: {id: null, name: '[Removed]'}
+// title: "[Removed]"
+// url: "https://removed.com"
+// urlToImage: null
+// }
+// 4. Fade out the last line of search results (3 lines total (?))
+
+// Potential Improvements
+// 1. Add languages, search in different languages

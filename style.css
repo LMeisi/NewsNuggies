@@ -442,7 +442,8 @@ body {
 }
 
 .preview__fig {
-  height: 6.8rem;
+  height: 7rem;
+  width: 100%;
   backface-visibility: hidden;
   border-radius: 10%;
   /* flex: 0 0 5.8rem; */
