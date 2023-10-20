@@ -132,8 +132,8 @@ const loadSearchResults = async function (
     state.search.totalResults = data.totalResults;
     // assign query property to state object
     state.search.query = query;
-    // ***??? Set page number to 1 (by default)
-    state.search.page = 1;
+    // Set page number to current page
+    state.search.page = pageNum;
 
     // Checking state object
     console.log(state);
@@ -141,6 +141,7 @@ const loadSearchResults = async function (
     console.log("Source name:", state.search.resultsToDisplay[0].source.name);
     console.log("Sort by:", state.search.sortBy);
     console.log("query:", state.search.query);
+    console.log("page:", state.search.page);
 
     // What does it return? Looks program is the same if I don't specify 'return' below (?)
     return state.search.resultsToDisplay;
@@ -247,7 +248,7 @@ function renderSearchResults(data) {
   results.insertAdjacentHTML("afterbegin", resultsMarkup);
 
   // render results options container
-  renderResultsOptions(data.totalResults, data.resultsPerPage);
+  renderResultsOptions(data.totalResults, data.resultsPerPage, data.page);
 
   // Render Pagination, pass in current page number (state.search.page)
   renderPagination(data.totalResults, data.resultsPerPage, data.page);
@@ -372,7 +373,7 @@ function renderErrorSearchResults(
 }
 
 // Renders result options container (used for when rendering search results)
-function renderResultsOptions(totalResults, resultsPerPage) {
+function renderResultsOptions(totalResults, resultsPerPage, curPage) {
   const optionsMarkup = `
   <!-- results totals container-->
   <div class="results-total-container">
@@ -380,9 +381,11 @@ function renderResultsOptions(totalResults, resultsPerPage) {
       <p class="results-total-title me-2 mb-1">Total Results:</p>
       <p class="results-total-num me-5 mb-0 fw-bold">${totalResults}</p>
       <p class="results-total-page me-2 mb-0">Total Pages:</p>
-      <p class="results-total-page-num mb-0 fw-bold">${Math.ceil(
+      <p class="results-total-page-num me-5 mb-0 fw-bold">${Math.ceil(
         totalResults / resultsPerPage
       )}</p>
+      <p class="results-total-page me-2 mb-0">Page:</p>
+      <p class="results-total-num mb-0 fw-bold">${curPage}</p>
     </div>
   </div>
   <!-- "sort by" -->
@@ -474,7 +477,7 @@ searchButton.addEventListener("click", function () {
 
       // Clear spinner
       clearSearchResults();
-      // Render search results based on resultsToDisplay in state object
+      // Render search results based on resultsToDisplay in state object, render pagination
       // Render doesn't need to be async, all data is already local
       renderSearchResults(state.search);
     })
@@ -518,7 +521,7 @@ $("body").on("click", ".sort-btn-relevancy", function (e) {
 
       // Clear spinner
       clearSearchResults();
-      // Render search results based on resultsToDisplay in state object
+      // Render search results based on resultsToDisplay in state object, render pagination
       // Render doesn't need to be async, all data is already local
       renderSearchResults(state.search);
 
@@ -557,7 +560,7 @@ $("body").on("click", ".sort-btn-publishedat", function (e) {
 
       // Clear spinner
       clearSearchResults();
-      // Render search results based on resultsToDisplay in state object
+      // Render search results based on resultsToDisplay in state object, render pagination
       // Render doesn't need to be async, all data is already local
       renderSearchResults(state.search);
 
@@ -596,11 +599,9 @@ $("body").on("click", ".sort-btn-popularity", function (e) {
 
       // Clear spinner
       clearSearchResults();
-      // Render search results based on resultsToDisplay in state object
+      // Render search results based on resultsToDisplay in state object, render pagination
       // Render doesn't need to be async, all data is already local
       renderSearchResults(state.search);
-
-      // ***CONTINUE HERE AFTER RENDERING SEARCH RESULTS
     })
     .catch((err) => {
       // Clear spinner
@@ -611,6 +612,55 @@ $("body").on("click", ".sort-btn-popularity", function (e) {
       renderErrorSearchResults();
     });
 });
+
+// Event Listener: Pagination Controls - have to use jQuery as button doesn't exist upon initial loading of page
+$("body").on("click", ".pagination", function (e) {
+  //Event Delegation: Select the closest parent element that's of 'btn-inline' class
+  //Because there's <span> and ion-icon elements inside the button element, want to make sure every time the button element itself is returned(selected)
+  const btn = e.target.closest(".btn--inline");
+
+  //Guard clause for if no btn found (if white space within pagination element clicked), do nothing
+  //Without guard clause, error would occur
+  if (!btn) return;
+
+  //Retrieve the value of data attribute 'data-goto' in the HTML code for the button element
+  //'goToPage' is the value of the page that app should go to
+  //convert the value to integer
+  const goToPage = +btn.dataset.goto;
+  console.log(goToPage);
+
+  //Render new results and render new page
+
+  //  Set below to false, not a search button click, so when loading loadSearchResults function, sort option won't default to 'popularity'
+  searchBtnClick = false;
+
+  // render spinner in search results
+  renderSpinnerSearchResults();
+
+  // Same as above, Call async LoadSearchResults, after results come back, then render the results, otherwise, wont work!!!
+  // Pass in the search query and page number to save results to state object
+  loadSearchResults(state.search.query, goToPage)
+    .then((p) => {
+      // p is the returned promise, not sure what it is, but doesn't matter, just need to use then here.
+      // Check statements
+      console.log(state.search.resultsToDisplay);
+
+      // Clear spinner
+      clearSearchResults();
+      // Render search results based on resultsToDisplay in state object, render pagination
+      // Render doesn't need to be async, all data is already local
+      renderSearchResults(state.search);
+    })
+    .catch((err) => {
+      // Clear spinner
+      clearSearchResults();
+
+      // If search returns error, loadSearResults will return a Promise with an error as its value, that error is caught and error message will be printed
+      console.log(err);
+      renderErrorSearchResults();
+    });
+});
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
