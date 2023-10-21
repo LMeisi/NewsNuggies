@@ -18,4 +18,4 @@ export const API_URL_SOURCE = "https://newsapi.org/v2/top-headlines?sources=";
 export const TIMEOUT_SEC = 10;
 
 // For displaying number of results per search results page
-export const RES_PER_PAGE = 10;
+export const RES_PER_PAGE = 7;

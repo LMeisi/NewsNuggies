@@ -20,10 +20,11 @@ const searchResults = document.querySelector(".search-results"); // Search Resul
 const results = document.querySelector(".results"); // Search results
 const resultsOptions = document.querySelector(".results-options"); // sorting options container
 const pagination = document.querySelector(".pagination"); // pagination container
+const news = document.querySelector(".news"); // news pane
 // const errorSearch = document.querySelector(".error-search");
 // const spinnerSearch = document.querySelector(".spinner-search");
 
-// Create State object - Object that contains the data for the current search query and results
+// ********** State object - Object that contains the data for the current search query and results
 // Consider updating/clearing every time 'search' button is clicked?
 const state = {
   news: {}, // Pick and Copy from state.search.resultsToRender array based on some form of id (what?)
@@ -38,29 +39,14 @@ const state = {
   bookmarks: [],
 };
 
-// State Variables
+// *********** Global State Variables
 // Search button click State: If it's search by 'search button' click, variable is true, otherwise (if clicking on sort buttons), false; default to true
 let searchBtnClick = true;
 
 //////////////////////////////////////////////////////////
-///////////////////*** Functions: News Pane related */
-
-// Function: Create News Object: Convert a chosen news data into the object that fits our format, and return such object
-
-// Function: Load News: Use a property as id from the chosen news object (address hash?) and render the object properties
-
-// Function: Render News
-
-// Function: Render Spinner for news Pane
-
-// Function: Render Error messages for News Pane
-
-// Function: clear news pane content
-
-//////////////////////////////////////////////////////////
 ///////////////////*** Functions: Search Results related */
 
-// Function: (?)Get Query: Function to return search input value
+// Function: Get Query: Function to return search input value
 function getQuery() {
   // Store input value to 'query'
   const inputQuery = document.querySelector(".search__field").value;
@@ -73,14 +59,12 @@ function getQuery() {
 
   return inputQuery;
 }
-// Function: Sorting method (?) How to incorporate into get query function?
 
 // Function: Clear Input: Function to clear input value
 function clearInput() {
   document.querySelector(".search__field").value = "";
 }
 
-// ********TO DO: add a state variable as input, so when clicking on search button is the initial search, when that happens state variable is true, then change the 'sortby' property to default "by popularity", otherwise, don't change the 'sortby' property
 // Function: Load search results: pass in a string (input query) & page number, use it to fetch data, and store results and search metadata in state object
 const loadSearchResults = async function (
   query = state.search.query,
@@ -154,26 +138,7 @@ const loadSearchResults = async function (
   }
 };
 
-// **********************************************************************************************************************
-// Below function NOT NEEDED for loading results - Above function will save selected array to display in state
-// Function: Get Search Results Page: Pass in a page number, and return the array of search results that are on that page
-// Default number is in the state object (when clicking on search button, page 1 is returned)
-// function getSearchResultsPage(page = state.search.page) {
-// state.search.page = page; // assign new page number to state object
-
-//'page' represents the number of the page to be rendered
-// 'resultsPerPage' is how many results we want shown on one page of preview
-//e.g. If we want 10 results on page, then below multiply by 10
-//e.g. page '1' below will return 0, and 10...
-// e.g. ...the slice method below will cut the results before array[0] and before array[10] (i.e. [0] thru [9])
-// const start = (page - 1) * state.search.resultsPerPage; // 0;
-// const end = page * state.search.resultsPerPage; // 9;
-
-//Return the selected results only
-//   return state.search.resultsToDisplay;
-// }
-// **********************************************************************************************************************
-
+// ********************************* RESULTS PANE RENDER FUNCTIONS
 // Function: Render Search Results ('data' argument passed in is state.search)
 function renderSearchResults(data) {
   // Clear results, resultOptions, pagination, also: error/spinner if available
@@ -192,9 +157,9 @@ function renderSearchResults(data) {
   // NOTE::: <!-- Using the fade out way to fade out multiple line truncation for result.title: https://css-tricks.com/line-clampin/ -->
   // Use moment.js here moment(result.publishedAt).fromNow() to get the time difference from publishedAt till now. moment.js API takes in the format directly and spits out '... ago'
   const resultsMarkup = data.resultsToDisplay
-    .map((result) => {
+    .map((result, index) => {
       // return generated markup
-      return `<li class="preview">
+      return `<li class="preview" data-index="${index}">
             <a class="preview__link" href="">
               <!-- Flexbox Vertical -->
               <div class="preview-container d-flex flex-column">
@@ -252,6 +217,89 @@ function renderSearchResults(data) {
 
   // Render Pagination, pass in current page number (state.search.page)
   renderPagination(data.totalResults, data.resultsPerPage, data.page);
+}
+
+// Function: Render Spinner for Search Results
+function renderSpinnerSearchResults() {
+  // Clear search results pane
+  clearSearchResults();
+
+  const markup = `
+    <div class="spinner spinner-search">
+      <svg>
+        <use href="img/icons.svg#icon-loader"></use>
+      </svg>
+    </div>`;
+
+  // render spinner
+  searchResults.insertAdjacentHTML("afterbegin", markup);
+}
+
+// Function: Render Error messages for search results
+// If no argument passed, use default message
+function renderErrorSearchResults(
+  errorMsg = "No news found for your query! Please try another one!"
+) {
+  // Error Msg check
+  console.log(errorMsg);
+
+  // Generate markup
+  const errorMarkup = `
+    <div class="error error-search">
+      <div>
+        <svg>
+          <use href="img/icons.svg#icon-alert-triangle"></use>
+        </svg>
+      </div>
+      <p>${errorMsg}</p>
+    </div>
+  `;
+
+  // Clear sorting options container and search results & pagination - Not needed, renderSearchResults already cleared it
+
+  // render error message
+  searchResults.insertAdjacentHTML("afterbegin", errorMarkup);
+}
+
+// Renders result options container (used for when rendering search results)
+function renderResultsOptions(totalResults, resultsPerPage, curPage) {
+  const optionsMarkup = `
+  <!-- results totals container-->
+  <div class="results-total-container">
+    <div class="results-total d-flex align-items-center">
+      <p class="results-total-title me-2 mb-1">Total Results:</p>
+      <p class="results-total-num me-5 mb-0 fw-bold">${totalResults}</p>
+      <p class="results-total-page me-2 mb-0">Total Pages:</p>
+      <p class="results-total-page-num me-5 mb-0 fw-bold">${Math.ceil(
+        totalResults / resultsPerPage
+      )}</p>
+      <p class="results-total-page me-2 mb-0">Page:</p>
+      <p class="results-total-num mb-0 fw-bold">${curPage}</p>
+    </div>
+  </div>
+  <!-- "sort by" -->
+  <div class="sort-title col-5">
+    <p>Sort by:</p>
+  </div>
+  <!-- sort options -->
+  <div class="sort-container col-7 d-flex justify-content-around">
+    <div class="sort-option sort-option-relevancy">
+      <button class="btn-sort sort-btn-relevancy text-decoration-none bg-transparent border-0" type="button">
+        <p>Relevancy</p>
+      </a>
+    </div>
+    <div class="sort-option sort-option-publishedat">
+      <button class="btn-sort sort-btn-publishedat text-decoration-none bg-transparent border-0" type="button">
+        <p>Date</p>
+      </a>
+    </div>
+    <div class="sort-option sort-option-popularity">
+      <button class="btn-sort sort-btn-popularity text-decoration-none bg-transparent border-0" type="button">
+        <p>Popularity</p>
+      </a>
+    </div>`;
+
+  resultsOptions.insertAdjacentHTML("afterbegin", optionsMarkup);
 }
 
 // Function: Render Pagination based on current page displayed
@@ -328,91 +376,6 @@ function renderPagination(totalResults, resultsPerPage, curPage) {
   } // Don't append any HTML
 }
 
-// Function: Update Search Results
-
-// Function: Render Spinner for Search Results
-function renderSpinnerSearchResults() {
-  // Clear search results pane
-  clearSearchResults();
-
-  const markup = `
-    <div class="spinner spinner-search">
-      <svg>
-        <use href="img/icons.svg#icon-loader"></use>
-      </svg>
-    </div>`;
-
-  // render spinner
-  searchResults.insertAdjacentHTML("afterbegin", markup);
-}
-
-// Function: Render Error messages for search results
-// If no argument passed, use default message
-function renderErrorSearchResults(
-  errorMsg = "No news found for your query! Please try another one!"
-) {
-  // Error Msg check
-  console.log(errorMsg);
-
-  // Generate markup
-  const errorMarkup = `
-    <div class="error error-search">
-      <div>
-        <svg>
-          <use href="img/icons.svg#icon-alert-triangle"></use>
-        </svg>
-      </div>
-      <p>${errorMsg}</p>
-    </div>
-  `;
-
-  // Clear sorting options container and search results & pagination - Not needed, renderSearchResults already cleared it
-
-  // render error message
-  searchResults.insertAdjacentHTML("afterbegin", errorMarkup);
-}
-
-// Renders result options container (used for when rendering search results)
-function renderResultsOptions(totalResults, resultsPerPage, curPage) {
-  const optionsMarkup = `
-  <!-- results totals container-->
-  <div class="results-total-container">
-    <div class="results-total d-flex">
-      <p class="results-total-title me-2 mb-1">Total Results:</p>
-      <p class="results-total-num me-5 mb-0 fw-bold">${totalResults}</p>
-      <p class="results-total-page me-2 mb-0">Total Pages:</p>
-      <p class="results-total-page-num me-5 mb-0 fw-bold">${Math.ceil(
-        totalResults / resultsPerPage
-      )}</p>
-      <p class="results-total-page me-2 mb-0">Page:</p>
-      <p class="results-total-num mb-0 fw-bold">${curPage}</p>
-    </div>
-  </div>
-  <!-- "sort by" -->
-  <div class="sort-title col-5">
-    <p>Sort by:</p>
-  </div>
-  <!-- sort options -->
-  <div class="sort-container col-7 d-flex justify-content-around">
-    <div class="sort-option sort-option-relevancy">
-      <button class="btn-sort sort-btn-relevancy text-decoration-none bg-transparent border-0" type="button">
-        <p>Relevancy</p>
-      </a>
-    </div>
-    <div class="sort-option sort-option-publishedat">
-      <button class="btn-sort sort-btn-publishedat text-decoration-none bg-transparent border-0" type="button">
-        <p>Date</p>
-      </a>
-    </div>
-    <div class="sort-option sort-option-popularity">
-      <button class="btn-sort sort-btn-popularity text-decoration-none bg-transparent border-0" type="button">
-        <p>Popularity</p>
-      </a>
-    </div>`;
-
-  resultsOptions.insertAdjacentHTML("afterbegin", optionsMarkup);
-}
-
 // Function: Clear Search results: results, resultOptions, pagination, also: error/spinner if available
 function clearSearchResults() {
   // Clear results and resultsOptions and pagination containers
@@ -430,7 +393,69 @@ function clearSearchResults() {
 }
 
 //////////////////////////////////////////////////////////
-///////////////////*** Functions: Pagination */
+///////////////////*** Functions: News Pane related */
+
+// ********************************* NEWS PANE RENDER FUNCTIONS
+// Function: Render news in news pane (on click)
+function renderNews(news) {}
+
+// Function: Render spinner in news pane
+function renderSpinnerNews() {
+  // Clear search results pane
+  // clearSearchResults();
+
+  const markup = `
+    <div class="spinner spinner-news">
+      <svg>
+        <use href="img/icons.svg#icon-loader"></use>
+      </svg>
+    </div>`;
+
+  // render spinner
+  news.insertAdjacentHTML("afterbegin", markup);
+}
+
+// Function: Render error in news pane
+function renderErrorNews(
+  errorMsg = "We could not find that news. Please try another one!"
+) {
+  // Error Msg check
+  console.log(errorMsg);
+
+  // Generate markup
+  const errorMarkup = `
+    <div class="error error-news">
+      <div>
+        <svg>
+          <use href="img/icons.svg#icon-alert-triangle"></use>
+        </svg>
+      </div>
+      <p>${errorMsg}</p>
+    </div>
+  `;
+
+  // Clear sorting options container and search results & pagination - Not needed, renderSearchResults already cleared it
+
+  // render error message
+  news.insertAdjacentHTML("afterbegin", errorMarkup);
+}
+
+// Function: clear news pane
+function clearNews() {
+  // Clear results and resultsOptions and pagination containers
+  // results.innerHTML = "";
+  // resultsOptions.innerHTML = "";
+  // pagination.innerHTML = "";
+
+  // // If error/spinner exists, remove them
+  // if (document.querySelector(".error-news") !== null) {
+  //   document.querySelector(".error-news").remove();
+  // }
+  // if (document.querySelector(".spinner-news") !== null) {
+  //   document.querySelector(".spinner-news").remove();
+  // }
+  news.innerHTML = "";
+}
 
 // Function: Pagination control: Click on page button, updates search results and page buttons
 
@@ -442,9 +467,6 @@ function clearSearchResults() {
 // Function: init(): local storage, initialize
 
 // Functions: Bookmark (?)
-
-//////////////////////////////////////////////////////////
-///////////////////*** Control Flow */
 
 //////////////////////////////////////////////////////////
 ///////////////////** Event Listeners */
@@ -490,12 +512,6 @@ searchButton.addEventListener("click", function () {
       renderErrorSearchResults();
     });
 });
-
-// Hashchange/load event handler (?)
-
-// Clicking on search results event handler (?)
-
-// Bookmark event handler (?)
 
 // EVENT LISTENER: Sort by Relevancy click
 // NOTE: Vanilla javascript won't work here unless use event.target, jQuery is easier here
@@ -661,6 +677,147 @@ $("body").on("click", ".pagination", function (e) {
     });
 });
 
+// Hashchange/load event handler (?)
+
+// Event handler - Clicking on search results (event delegation)
+$("body").on("click", ".results", function (e) {
+  // Step 1: Locate the clicked element (news) from the resultsToDisplay array using data-index property of the preview element
+  // Event Delegation: Select the closest parent element that's of 'preview' class and assign to the 'previewToDisplay" element (newly created)
+  const previewToDisplay = e.target.closest(".preview");
+
+  //Guard clause for if no previewToDisplay found, do nothing (for now, impossible)
+  //Without guard clause, error would occur
+  if (!previewToDisplay) return;
+
+  // Find the dataset index property of the previewToDisplay result, set it to 'resultToDisplayIndex'
+  const resultToDisplayIndex = previewToDisplay.dataset.index;
+
+  // Check resultsToDisplay index and the corresponding news result
+  console.log(resultToDisplayIndex);
+  // console.log(state.search.resultsToDisplay[resultToDisplayIndex]);
+
+  // Save news to display to variable
+  const newsToDisplay = state.search.resultsToDisplay[resultToDisplayIndex];
+  console.log(newsToDisplay);
+
+  // Step 2: Render the clicked result to news pane
+  // Clear current news pane
+  clearNews();
+
+  // If news result is NOT valid
+  if (
+    newsToDisplay.title == "[Removed]" &&
+    newsToDisplay.content == "[Removed]" &&
+    newsToDisplay.url == "https://removed.com"
+  ) {
+    // render spinner in news pane
+    // renderSpinnerNews();
+
+    // Clear spinner in news pane
+    // clearNews();
+
+    // If news result not valid, render error
+    renderErrorNews();
+  }
+  // If news result is valid
+  else {
+    // render spinner in news pane
+    // renderSpinnerNews();
+
+    // Clear spinner in news pane
+    // clearNews();
+
+    // render clicked news article
+    const markup = `
+        <!-- news header -->
+        <div class="news-header d-flex flex-column px-5 pt-5 pb-4">
+          <!-- source -->
+          <div class="news-source-container">
+            <p
+              class="news-source fs-5 fw-bold align-middle mb-1 text-uppercase"
+            >
+              ${newsToDisplay.source.name}
+            </p>
+          </div>
+          <!-- title -->
+          <div class="news-title-container">
+            <h2 class="news-title fs-1 fw-bold">
+              ${newsToDisplay.title}
+            </h2>
+          </div>
+          <!-- news author and publish time -->
+          <div class="d-flex news-info-container">
+            <!-- author -->
+            <div class="news-author-container d-flex fs-5 pe-4">
+              <span>By&nbsp;</span>
+              <p class="news-author fst-italic">${newsToDisplay.author}</p>
+            </div>
+            <!-- publish time -->
+            <div class="news-pub-time-container d-flex fs-5">
+              <span>Updated&nbsp;</span>
+              <p class="news-pub-time fst-italic">${newsToDisplay.publishedAt.substring(
+                0,
+                4
+              )}-${newsToDisplay.publishedAt.substring(
+      5,
+      7
+    )}-${newsToDisplay.publishedAt.substring(
+      8,
+      10
+    )}&nbsp;${newsToDisplay.publishedAt.substring(11, 19)}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- news img -->
+        <div class="news-img-container px-5">
+          <img
+            class="news-img"
+            src="${newsToDisplay.urlToImage}"
+          />
+        </div>
+
+        <!-- news description -->
+        <div class="news-description-container px-5 pt-5 pb-4">
+          <h4 class="news-description">
+           ${newsToDisplay.description}
+          </h4>
+        </div>
+
+        <!-- news source and bookmark button -->
+        <div
+          class="news-action-container px-5 pt-1 d-flex justify-content-between align-items-center"
+        >
+          <a
+            class="news-source-btn-link text-decoration-none me-3"
+            href="${newsToDisplay.url}" target="_blank"
+          >
+            <button class="btn news-source-btn ms-1" type="button">
+              <!-- <svg class="search__icon">
+              <use href="img/icons.svg#icon-search"></use>
+            </svg> -->
+              <span>See Full Article</span>
+            </button>
+          </a>
+          <a class="news-source-btn-bookmark text-decoration-none me-5" href="">
+            <button class="btn--round" type="button">
+              <svg class="">
+                <use href="img/icons.svg#icon-bookmark-fill"></use>
+              </svg>
+            </button>
+          </a>
+        </div>
+        `;
+
+    // insert to news pane
+    news.insertAdjacentHTML("afterbegin", markup);
+  }
+
+  e.preventDefault();
+});
+
+// Bookmark event handler (?)
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
@@ -694,6 +851,8 @@ $("body").on("click", ".pagination", function (e) {
 // urlToImage: null
 // }
 // 4. Fade out the last line of search results (3 lines total (?))
+// 5. Fix the format of sort options, align the sort options to the right side with margins, to align with the page number on the top line
+// 5m. media query for sort options top line, change it to line by line showing instead of cramming in 1 liner
 
 // Potential Improvements
 // 1. Add languages, search in different languages
